@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
-  --page: #dcdcda;
-  --surface: #eeeeec;
+  --page: #c7c7c5;
+  --surface: #dbdbd9;
   --text-primary: #1c1c1b;
   --text-secondary: #4d4c49;
   --text-muted: #7a7975;
@@ -95,8 +95,9 @@ body::before {
 .topbar h1 {
   grid-column: 2;
   justify-self: center;
-  font-size: 24px;
-  font-weight: 800;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 700;
   margin: 0;
   color: var(--accent-equities);
   letter-spacing: -0.01em;
@@ -245,14 +246,24 @@ body::before {
   overflow: hidden;
 }
 
+.line-cap {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 #equities-lines .line-name,
-.lines-header .line-name { width: 32%; }
+.lines-header .line-name { width: 24%; }
 #equities-lines .line-symbol,
-.lines-header .line-symbol { width: 12%; }
+.lines-header .line-symbol { width: 10%; }
 #equities-lines .line-price,
-.lines-header .line-price { width: 22%; }
+.lines-header .line-price { width: 18%; }
 #equities-lines .line-delta,
-.lines-header .line-delta { width: 27%; }
+.lines-header .line-delta { width: 20%; }
+#equities-lines .line-cap,
+.lines-header .line-cap { width: 20%; }
 
 .lines-header {
   margin-bottom: 6px;

@@ -36,6 +36,14 @@ function formatPrice(value) {
   });
 }
 
+function formatMarketCap(value) {
+  if (value === null || value === undefined) return "—";
+  if (value >= 1e12) return `${(value / 1e12).toFixed(2)}T`;
+  if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
+  if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
+  return value.toLocaleString();
+}
+
 function formatDelta(change, changePercent) {
   if (change === null || change === undefined) return { text: "—", dir: "flat" };
   const dir = change > 0 ? "up" : change < 0 ? "down" : "flat";
@@ -64,12 +72,14 @@ function lineHtml(c, { removable } = {}) {
 
   const delta = formatDelta(c.change, c.changePercent);
   const unit = c.unit ? `/${c.unit}` : "";
+  const capCell = removable ? `<span class="line-cap">${formatMarketCap(c.marketCap)}</span>` : "";
   return `
     <div class="line">
       <span class="line-name">${c.name}</span>
       <span class="line-symbol">${c.symbol}</span>
       <span class="line-price">${formatPrice(c.price)}<span class="line-unit">${c.currency || ""}${unit}</span></span>
       <span class="line-delta ${delta.dir}">${delta.text}</span>
+      ${capCell}
       ${removeBtn}
     </div>`;
 }
@@ -89,8 +99,9 @@ function sortEquities(list) {
     if (equitiesSort.key === "name") {
       result = (a.name || a.symbol).localeCompare(b.name || b.symbol);
     } else {
-      const av = a.changePercent ?? -Infinity;
-      const bv = b.changePercent ?? -Infinity;
+      const field = equitiesSort.key;
+      const av = a[field] ?? -Infinity;
+      const bv = b[field] ?? -Infinity;
       result = av - bv;
     }
     return equitiesSort.dir === "asc" ? result : -result;

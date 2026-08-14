@@ -11,6 +11,7 @@ Run:
 Then open http://localhost:8000
 """
 
+import http.cookiejar
 import json
 import re
 import time
@@ -62,6 +63,57 @@ COMMODITIES = [
 
 _quote_cache = {}  # symbol -> (data_dict, fetched_at)
 
+# Market cap isn't in the unauthenticated chart endpoint's payload, so a
+# separate cookie+crumb authenticated call is needed for it. Failures here
+# are non-fatal — price/change data still comes from _fetch_meta regardless.
+_yahoo_cookie_jar = http.cookiejar.CookieJar()
+_yahoo_opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_yahoo_cookie_jar))
+_crumb_cache = {"value": None, "fetched_at": 0}
+CRUMB_TTL_SECONDS = 3600
+
+
+def _get_crumb(force=False):
+    now = time.time()
+    if not force and _crumb_cache["value"] and (now - _crumb_cache["fetched_at"]) < CRUMB_TTL_SECONDS:
+        return _crumb_cache["value"]
+
+    # This ping always 404s but sets the auth cookie via Set-Cookie regardless
+    # of status — only the cookie side effect matters here.
+    req = urllib.request.Request("https://fc.yahoo.com", headers={"User-Agent": USER_AGENT})
+    try:
+        _yahoo_opener.open(req, timeout=8).read()
+    except urllib.error.HTTPError:
+        pass
+
+    req = urllib.request.Request(
+        "https://query1.finance.yahoo.com/v1/test/getcrumb",
+        headers={"User-Agent": USER_AGENT},
+    )
+    crumb = _yahoo_opener.open(req, timeout=8).read().decode("utf-8").strip()
+    _crumb_cache["value"] = crumb
+    _crumb_cache["fetched_at"] = now
+    return crumb
+
+
+def _fetch_market_cap(symbol, retry=True):
+    try:
+        crumb = _get_crumb()
+        url = (
+            f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{quote(symbol)}"
+            f"?modules=price&crumb={quote(crumb)}"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        payload = json.loads(_yahoo_opener.open(req, timeout=8).read())
+        result = payload.get("quoteSummary", {}).get("result")
+        if not result:
+            if retry:
+                _get_crumb(force=True)
+                return _fetch_market_cap(symbol, retry=False)
+            return None
+        return result[0]["price"].get("marketCap", {}).get("raw")
+    except (urllib.error.URLError, KeyError, IndexError, ValueError):
+        return None
+
 
 def _fetch_meta(symbol):
     url = (
@@ -93,6 +145,7 @@ def _build_quote(symbol, name, category, unit, meta):
         "changePercent": change_percent,
         "currency": meta.get("currency", "USD"),
         "marketTime": meta.get("regularMarketTime"),
+        "marketCap": None,
         "error": None,
     }
 
@@ -109,6 +162,7 @@ def _error_quote(symbol, name, category, unit, exc):
         "changePercent": None,
         "currency": None,
         "marketTime": None,
+        "marketCap": None,
         "error": str(exc),
     }
 
@@ -126,7 +180,9 @@ def fetch_equity(symbol):
     try:
         meta = _fetch_meta(symbol)
         name = meta.get("shortName") or meta.get("longName") or symbol
-        return _build_quote(symbol, name, "Equities", "", meta)
+        result = _build_quote(symbol, name, "Equities", "", meta)
+        result["marketCap"] = _fetch_market_cap(symbol)
+        return result
     except (urllib.error.URLError, KeyError, IndexError, ValueError) as exc:
         return _error_quote(symbol, symbol, "Equities", "", exc)
 

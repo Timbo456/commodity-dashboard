@@ -1,10 +1,13 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>News Dashboard</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a1a19'/%3E%3Cpolyline points='6,22 13,14 18,18 26,7' fill='none' stroke='%230ca30c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpolyline points='19,7 26,7 26,14' fill='none' stroke='%230ca30c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='23' font-size='26' text-anchor='middle'%3E%F0%9F%95%B7%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -38,6 +41,7 @@
           <span class="line-symbol"></span>
           <span class="line-price"></span>
           <button type="button" class="sort-btn line-delta" data-sort="changePercent">% Chg <span class="sort-arrow" data-key="changePercent">↕</span></button>
+          <button type="button" class="sort-btn line-cap" data-sort="marketCap">Mkt Cap <span class="sort-arrow" data-key="marketCap">↕</span></button>
           <span class="line-remove"></span>
         </div>
       </div>
