@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>News Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='23' font-size='26' text-anchor='middle'%3E%F0%9F%95%B7%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <h1>News Dashboard</h1>
+    <div class="status">
+      <span id="updated-at" class="muted">Loading…</span>
+      <span class="dot" id="live-dot" aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <main class="columns">
+    <section class="section section-equities">
+      <h2>Equities</h2>
+      <form id="ticker-form" class="ticker-form">
+        <input
+          id="ticker-input"
+          type="text"
+          placeholder="Add ticker, e.g. AAPL"
+          maxlength="15"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button type="submit">Add</button>
+      </form>
+      <p id="ticker-error" class="ticker-error muted" hidden></p>
+      <div class="lines lines-header">
+        <div class="line line-head">
+          <button type="button" class="sort-btn line-name" data-sort="name">Name <span class="sort-arrow" data-key="name">↕</span></button>
+          <span class="line-symbol"></span>
+          <span class="line-price"></span>
+          <button type="button" class="sort-btn line-delta" data-sort="changePercent">% Chg <span class="sort-arrow" data-key="changePercent">↕</span></button>
+          <button type="button" class="sort-btn line-cap" data-sort="marketCap">Mkt Cap <span class="sort-arrow" data-key="marketCap">↕</span></button>
+          <span class="line-remove"></span>
+        </div>
+      </div>
+      <div class="lines" id="equities-lines"></div>
+      <p id="equities-empty" class="muted" hidden>No tickers yet — add one above.</p>
+    </section>
+
+    <section class="section section-commodities">
+      <h2>Commodities</h2>
+      <div class="lines" id="commodities-lines"></div>
+    </section>
+  </main>
+
+  <section class="section section-news">
+    <h2>News</h2>
+    <div class="news-list" id="news-list"></div>
+  </section>
+
+  <footer class="foot muted">
+    Prices via Yahoo Finance, delayed ~15–20 minutes. Refreshes every 30s. News refreshes every 5 minutes.
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
