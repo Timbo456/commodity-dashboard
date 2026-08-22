@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect x="0" y="0" width="512" height="512" rx="115" fill="#000000"/>
+  <g fill="#FF6B1F">
+    <!-- ears + head -->
+    <circle cx="108" cy="232" r="58"/>
+    <circle cx="404" cy="232" r="58"/>
+    <path d="M256 98 C340 98 398 156 398 242 C398 346 338 424 256 424 C174 424 114 346 114 242 C114 156 172 98 256 98 Z"/>
+  </g>
+  <g fill="#000000">
+    <!-- angry brows -->
+    <path d="M150 184 L248 232 L240 264 L142 212 Z"/>
+    <path d="M362 184 L264 232 L272 264 L370 212 Z"/>
+    <!-- narrowed eyes -->
+    <path d="M166 242 L234 274 L208 296 C180 292 166 270 166 242 Z"/>
+    <path d="M346 242 L278 274 L304 296 C332 292 346 270 346 242 Z"/>
+    <!-- nostrils -->
+    <ellipse cx="234" cy="298" rx="10" ry="7.5"/>
+    <ellipse cx="278" cy="298" rx="10" ry="7.5"/>
+    <!-- open howling mouth -->
+    <ellipse cx="256" cy="352" rx="80" ry="46"/>
+  </g>
+  <g fill="#FF6B1F">
+    <!-- fangs -->
+    <path d="M192 308 L216 308 L204 352 Z"/>
+    <path d="M320 308 L296 308 L308 352 Z"/>
+    <path d="M221 398 L245 398 L233 358 Z"/>
+    <path d="M291 398 L267 398 L279 358 Z"/>
+  </g>
+</svg>
