@@ -11,6 +11,7 @@ Run:
 Then open http://localhost:8000
 """
 
+import html
 import http.cookiejar
 import json
 import re
@@ -19,6 +20,7 @@ import time
 import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from email.utils import parsedate_to_datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -34,6 +36,30 @@ SYMBOL_RE = re.compile(r"^[A-Z0-9.\-\^]{1,15}$")
 MAX_EQUITY_SYMBOLS = 30
 ITEMS_PER_SOURCE = 8
 MAX_NEWS_ITEMS = 40
+
+# /biz/ ticker mentions — read via 4chan's official read-only JSON API
+# (https://github.com/4chan/4chan-API). Their rules: max 1 request/second and
+# don't refetch a thread more than every 10s, so scans are cached that long.
+BIZ_CATALOG_URL = "https://a.4cdn.org/biz/catalog.json"
+BIZ_THREAD_URL = "https://a.4cdn.org/biz/thread/{}.json"
+SMG_SUBJECT_RE = re.compile(r"/smg/|stock market general", re.I)
+BIZ_SCAN_TTL_SECONDS = 15
+SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
+SEC_TICKERS_TTL_SECONDS = 86400
+API_USER_AGENT = "commodity-dashboard/1.0"
+
+# Real tickers that are also everyday words, slang, or acronyms. These only
+# count when written as a cashtag ($ON, $NOW...). Single letters always need $.
+TICKER_STOPWORDS = set("""
+    AI ALL AM AN AND ANY ARE AS AT ATH ATL BE BIG BIT BOOM BRO BY CAN CAR CASH
+    CEO CFO CIA CPI DD DO DOW EAT EOD EPS ES ETF EU EV EVER FAST FED FOR FUN FUD
+    GDP GO GOOD GOT HAS HE HER HIM HIS HOLD HOPE HUGE IMO IPO IQ IRA IS IT ITS
+    JOB KEY LOL LOVE LOW MAN ME MOM MORE MOST NC NEW NEXT NICE NO NOT NOW NYSE
+    OF OH OK ON ONE OP OR OUR OUT PAY PLAY POST PUMP REAL RIP ROI RUN SAN SAVE
+    SEC SEE SHE SO SPY SUCH TECH THE TL TO TOP TRUE TV TWO UK UP US USA USD
+    VERY WAY WE WELL WHO WIN WOW YES YOLO YOU
+""".split())
+TICKER_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9$])(\$?)([A-Za-z]{1,5})(?![A-Za-z0-9])")
 
 # python.org Python on macOS ships without a CA store, so TLS verification
 # fails for sites that don't send their full chain. Prefer certifi's bundle.
@@ -287,6 +313,107 @@ def get_news():
     return data
 
 
+def _get_json(url):
+    req = urllib.request.Request(url, headers={"User-Agent": API_USER_AGENT})
+    with urllib.request.urlopen(req, timeout=10, context=SSL_CONTEXT) as resp:
+        return json.loads(resp.read())
+
+
+_sec_cache = {"names": None, "fetched_at": 0}
+
+
+def get_ticker_names():
+    now = time.time()
+    if _sec_cache["names"] and (now - _sec_cache["fetched_at"]) < SEC_TICKERS_TTL_SECONDS:
+        return _sec_cache["names"]
+    payload = _get_json(SEC_TICKERS_URL)
+    names = {
+        row["ticker"].upper(): re.sub(r"\s*/[A-Z ]*/?$", "", row["title"]).strip()
+        for row in payload.values()
+    }
+    _sec_cache["names"] = names
+    _sec_cache["fetched_at"] = now
+    return names
+
+
+def _post_text(post):
+    raw = post.get("com", "")
+    raw = re.sub(r'<a [^>]*class="quotelink"[^>]*>.*?</a>', " ", raw)  # >>12345 reply links
+    raw = re.sub(r"<br\s*/?>", "\n", raw)
+    raw = re.sub(r"<[^>]+>", "", raw)
+    return html.unescape(raw)
+
+
+def count_tickers(posts, names):
+    counts = Counter()
+    for post in posts:
+        text = _post_text(post)
+        letters = [ch for ch in text if ch.isalpha()]
+        # In all-caps shouting every word looks like a ticker; trust cashtags only.
+        shouting = len(letters) >= 12 and sum(ch.isupper() for ch in letters) / len(letters) > 0.6
+        for match in TICKER_TOKEN_RE.finditer(text):
+            dollar, word = match.groups()
+            ticker = word.upper()
+            if ticker not in names:
+                continue
+            if dollar:
+                counts[ticker] += 1
+            elif word.isupper() and not shouting and len(ticker) > 1 and ticker not in TICKER_STOPWORDS:
+                counts[ticker] += 1
+    return counts
+
+
+_biz_cache = {"data": None, "fetched_at": 0}
+
+
+def get_biz_mentions():
+    now = time.time()
+    if _biz_cache["data"] and (now - _biz_cache["fetched_at"]) < BIZ_SCAN_TTL_SECONDS:
+        return _biz_cache["data"]
+
+    catalog = _get_json(BIZ_CATALOG_URL)
+    smg_threads = [
+        t for page in catalog for t in page.get("threads", [])
+        if SMG_SUBJECT_RE.search(html.unescape(t.get("sub", "")))
+    ]
+    if not smg_threads:
+        return {"generatedAt": int(now), "threads": [], "mentions": [],
+                "error": "No /smg/ threads are live on /biz/ right now."}
+    smg_threads.sort(key=lambda t: t["no"], reverse=True)
+
+    names = get_ticker_names()
+    counts = Counter()
+    scanned = []
+    for t in smg_threads:
+        time.sleep(1)  # 4chan API: max one request per second
+        try:
+            posts = _get_json(BIZ_THREAD_URL.format(t["no"])).get("posts", [])
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:  # pruned between the catalog fetch and now
+                continue
+            raise
+        counts.update(count_tickers(posts, names))
+        scanned.append({
+            "no": t["no"],
+            "subject": html.unescape(t.get("sub", "")),
+            "url": f"https://boards.4chan.org/biz/thread/{t['no']}",
+            "posts": len(posts),
+        })
+
+    data = {
+        "generatedAt": int(now),
+        "threads": scanned,
+        "mentions": [
+            {"ticker": t, "name": names[t], "count": n}
+            for t, n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+        ],
+        "error": None,
+    }
+    _biz_cache["data"] = data
+    _biz_cache["fetched_at"] = now
+    return data
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass  # keep the console quiet
@@ -348,6 +475,13 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/news":
             try:
                 self._send_json(get_news())
+            except Exception as exc:
+                self._send_json({"error": str(exc)}, status=500)
+            return
+
+        if parsed.path == "/api/biz-mentions":
+            try:
+                self._send_json(get_biz_mentions())
             except Exception as exc:
                 self._send_json({"error": str(exc)}, status=500)
             return

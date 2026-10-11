@@ -52,7 +52,7 @@ function formatDelta(change, changePercent) {
   const pct = changePercent === null || changePercent === undefined
     ? ""
     : ` (${sign}${changePercent.toFixed(2)}%)`;
-  return { text: `${arrow} ${sign}${change.toFixed(2)}${pct}`, dir };
+  return { text: `${arrow} <span class="delta-abs">${sign}${change.toFixed(2)}</span>${pct}`, dir };
 }
 
 function lineHtml(c, { removable } = {}) {
@@ -213,6 +213,53 @@ async function refreshEquities() {
     // leave existing rows in place on transient failure
   }
 }
+
+const bizScanBtn = document.getElementById("biz-scan");
+const bizStatusEl = document.getElementById("biz-status");
+const bizLinesEl = document.getElementById("biz-lines");
+
+function renderBizMentions(data) {
+  const threads = data.threads || [];
+  const posts = threads.reduce((sum, t) => sum + t.posts, 0);
+  const links = threads
+    .map((t, i) => `<a href="${escapeHtml(t.url)}" target="_blank" rel="noopener noreferrer">#${i + 1}</a>`)
+    .join(" ");
+  bizStatusEl.classList.remove("is-error");
+  bizStatusEl.innerHTML =
+    `${data.mentions.length} tickers across ${threads.length} live thread${threads.length === 1 ? "" : "s"} ` +
+    `(${posts.toLocaleString()} posts) · ${links} · scanned ${new Date(data.generatedAt * 1000).toLocaleTimeString()}`;
+
+  if (data.mentions.length === 0) {
+    bizLinesEl.hidden = true;
+    return;
+  }
+  const max = data.mentions[0].count;
+  bizLinesEl.innerHTML = data.mentions.map((m) => `
+    <div class="line">
+      <span class="biz-ticker">${escapeHtml(m.ticker)}</span>
+      <span class="biz-company" title="${escapeHtml(m.name)}">${escapeHtml(m.name)}</span>
+      <span class="biz-bar"><span style="width:${(m.count / max) * 100}%"></span></span>
+      <span class="biz-count">${m.count}</span>
+    </div>`).join("");
+  bizLinesEl.hidden = false;
+}
+
+bizScanBtn.addEventListener("click", async () => {
+  bizScanBtn.disabled = true;
+  bizScanBtn.textContent = "Scanning…";
+  try {
+    const res = await fetch("/api/biz-mentions");
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderBizMentions(data);
+  } catch (err) {
+    bizStatusEl.textContent = `Scan failed: ${err.message}`;
+    bizStatusEl.classList.add("is-error");
+  } finally {
+    bizScanBtn.disabled = false;
+    bizScanBtn.textContent = "Scan";
+  }
+});
 
 function refreshAll() {
   refreshCommodities();

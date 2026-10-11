@@ -11,6 +11,7 @@
   --accent-equities: #2a78d6;
   --accent-commodities: #4a3aa7;
   --accent-news: #1baf7a;
+  --accent-biz: #c2560c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +28,7 @@
     --accent-equities: #3987e5;
     --accent-commodities: #9085e9;
     --accent-news: #199e70;
+    --accent-biz: #f97316;
   }
 }
 
@@ -43,6 +45,7 @@
   --accent-equities: #3987e5;
   --accent-commodities: #9085e9;
   --accent-news: #199e70;
+  --accent-biz: #f97316;
 }
 
 * { box-sizing: border-box; }
@@ -69,13 +72,41 @@ body::before {
 
 .columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 0.85fr);
+  gap: 16px;
   align-items: start;
 }
 
 .columns .section {
   min-width: 0;
+}
+
+/* Three columns get tight below ~1240px: drop the symbol column and the
+   absolute change so the commodity and equity rows still fit. */
+@media (min-width: 901px) and (max-width: 1240px) {
+  .section-equities .line-symbol,
+  .section-commodities .line-symbol,
+  .delta-abs,
+  .section-equities .line-unit { display: none !important; }
+  .line-delta { width: 30%; }
+  .line-name { width: 40%; }
+  .line-price { width: 30%; }
+  #equities-lines .line-name,
+  .lines-header .line-name { width: 28%; }
+  #equities-lines .line-price,
+  .lines-header .line-price { width: 21%; }
+  #equities-lines .line-delta,
+  .lines-header .line-delta { width: 26%; }
+  #equities-lines .line-cap,
+  .lines-header .line-cap { width: 18%; }
+}
+
+/* Narrow windows: two columns with the /biz/ list full-width underneath. */
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .columns .section-biz { grid-column: 1 / -1; }
 }
 
 @media (max-width: 720px) {
@@ -166,10 +197,12 @@ body::before {
 .section-equities { --section-accent: var(--accent-equities); }
 .section-commodities { --section-accent: var(--accent-commodities); }
 .section-news { --section-accent: var(--accent-news); }
+.section-biz { --section-accent: var(--accent-biz); --biz-row-height: 25px; }
 
 .section-equities .lines-header,
 .section-commodities .lines,
-.section-news .news-list {
+.section-news .news-list,
+.section-biz .lines {
   border-top: 2px solid var(--section-accent);
 }
 
@@ -423,4 +456,89 @@ body::before {
   margin-top: 20px;
   font-size: 12px;
   text-align: center;
+}
+
+.biz-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  min-height: 31px;
+}
+
+.biz-head h2 { margin: 0; }
+
+.biz-scan {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--text-primary);
+  color: var(--page);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.biz-scan:hover { opacity: 0.85; }
+.biz-scan:disabled { opacity: 0.5; cursor: progress; }
+
+.biz-status {
+  font-size: 12px;
+  margin: 0 0 10px;
+}
+
+.biz-status a { color: inherit; }
+.biz-status.is-error { color: var(--critical); }
+
+/* ~25 rows visible; the rest scroll. */
+#biz-lines {
+  display: block;
+  max-height: calc(25 * var(--biz-row-height));
+  overflow-y: auto;
+}
+
+#biz-lines[hidden] { display: none; }
+
+#biz-lines .line {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 22% 30px;
+  align-items: center;
+  height: var(--biz-row-height);
+  border-bottom: 1px solid var(--border);
+}
+
+#biz-lines .line:last-child { border-bottom: none; }
+#biz-lines .line > * { display: block; border-bottom: none; }
+
+.biz-ticker { font-weight: 700; }
+
+.biz-company {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.biz-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+  padding: 0 !important;
+  margin: 0 6px;
+}
+
+.biz-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent-biz);
+}
+
+.biz-count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }

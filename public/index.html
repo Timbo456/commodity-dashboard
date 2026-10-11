@@ -37,11 +37,11 @@
       <p id="ticker-error" class="ticker-error muted" hidden></p>
       <div class="lines lines-header">
         <div class="line line-head">
-          <button type="button" class="sort-btn line-name" data-sort="name">Name <span class="sort-arrow" data-key="name">↕</span></button>
+          <span class="line-name"><button type="button" class="sort-btn" data-sort="name">Name <span class="sort-arrow" data-key="name">↕</span></button></span>
           <span class="line-symbol"></span>
           <span class="line-price"></span>
-          <button type="button" class="sort-btn line-delta" data-sort="changePercent">% Chg <span class="sort-arrow" data-key="changePercent">↕</span></button>
-          <button type="button" class="sort-btn line-cap" data-sort="marketCap">Mkt Cap <span class="sort-arrow" data-key="marketCap">↕</span></button>
+          <span class="line-delta"><button type="button" class="sort-btn" data-sort="changePercent">% Chg <span class="sort-arrow" data-key="changePercent">↕</span></button></span>
+          <span class="line-cap"><button type="button" class="sort-btn" data-sort="marketCap">Mkt Cap <span class="sort-arrow" data-key="marketCap">↕</span></button></span>
           <span class="line-remove"></span>
         </div>
       </div>
@@ -52,6 +52,15 @@
     <section class="section section-commodities">
       <h2>Commodities</h2>
       <div class="lines" id="commodities-lines"></div>
+    </section>
+
+    <section class="section section-biz">
+      <div class="biz-head">
+        <h2>/biz/ SMG Mentions</h2>
+        <button type="button" id="biz-scan" class="biz-scan" title="Scan every live /smg/ thread on /biz/">Scan</button>
+      </div>
+      <p id="biz-status" class="biz-status muted">Counts ticker mentions across every live /smg/ thread on 4chan /biz/.</p>
+      <div class="lines" id="biz-lines" hidden></div>
     </section>
   </main>
 
