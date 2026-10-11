@@ -5,13 +5,30 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
 
-$port = 8000
+$port = 8737
 $url = "http://localhost:$port"
 
 # If a server is already listening on this port (e.g. left over from a
 # previous run), don't spawn a second one.
 $serverProcess = $null
 $portInUse = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+
+function Test-Dashboard {
+    try {
+        $resp = Invoke-WebRequest -Uri "$url/api/ping" -UseBasicParsing -TimeoutSec 2
+        return $resp.Content -match '"commodity-dashboard"'
+    } catch {
+        return $false
+    }
+}
+
+if ($portInUse -and -not (Test-Dashboard)) {
+    Add-Type -AssemblyName System.Windows.Forms
+    [System.Windows.Forms.MessageBox]::Show(
+        "Port $port is already in use by another program. Quit it and try again.",
+        "Commodity Dashboard") | Out-Null
+    exit 1
+}
 
 if (-not $portInUse) {
     # "python" alone can resolve to the Windows Store app-execution-alias,
@@ -30,13 +47,11 @@ if (-not $portInUse) {
     # Wait for the server to start responding, up to 15 seconds.
     $ready = $false
     for ($i = 0; $i -lt 30; $i++) {
-        try {
-            Invoke-WebRequest -Uri "$url/api/prices" -UseBasicParsing -TimeoutSec 1 | Out-Null
+        if (Test-Dashboard) {
             $ready = $true
             break
-        } catch {
-            Start-Sleep -Milliseconds 500
         }
+        Start-Sleep -Milliseconds 500
     }
 }
 

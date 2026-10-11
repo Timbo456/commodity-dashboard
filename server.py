@@ -8,7 +8,7 @@ server-side and the frontend polls the /api/* endpoints instead).
 Run:
     python server.py
 
-Then open http://localhost:8000
+Then open http://localhost:8737
 """
 
 import html
@@ -27,7 +27,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote, urlparse, parse_qs
 
-PORT = 8000
+# Not 8000: that's a common default for other local dev/LLM servers, and the
+# launchers would otherwise attach to whatever else is listening there.
+PORT = 8737
 PUBLIC_DIR = Path(__file__).parent / "public"
 CACHE_TTL_SECONDS = 10
 NEWS_CACHE_TTL_SECONDS = 300
@@ -449,6 +451,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+
+        if parsed.path == "/api/ping":
+            # Lets the launchers tell this server apart from anything else on the port.
+            self._send_json({"app": "commodity-dashboard"})
+            return
 
         if parsed.path == "/api/prices":
             try:

@@ -20,5 +20,5 @@ Requires [Python 3](https://www.python.org/downloads/) and Chrome or Edge. Unzip
 ```bash
 pip install -r requirements.txt
 python server.py
-# open http://localhost:8000
+# open http://localhost:8737
 ```

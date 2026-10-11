@@ -1,7 +1,7 @@
 #!/bin/bash
 # Commodity Dashboard — macOS launcher.
 #
-# Starts the Python price server if nothing is listening on port 8000 yet,
+# Starts the Python price server if it isn't already running on its port,
 # opens the dashboard in a borderless Chrome app window (no tabs/address
 # bar), and shuts the server down automatically when that window closes.
 # Mirrors launch.ps1 from the Windows version of this repo.
@@ -22,7 +22,7 @@ else
     done
 fi
 [ -f "$root/server.py" ] || { echo "ERROR: server.py not found"; exit 1; }
-port=8000
+port=8737
 url="http://localhost:$port"
 state_dir="$HOME/Library/Application Support/commodity-dashboard"
 pidfile="$state_dir/launcher.pid"
@@ -64,15 +64,20 @@ fi
 
 # --- start the server only if the port is free (attach to an existing one otherwise) ---
 server_pid=""
-if ! nc -z 127.0.0.1 "$port" >/dev/null 2>&1; then
+is_dashboard() {
+    curl -s --max-time 2 "$url/api/ping" 2>/dev/null | grep -q '"commodity-dashboard"'
+}
+if nc -z 127.0.0.1 "$port" >/dev/null 2>&1; then
+    is_dashboard || fail "Port $port is already in use by another program. Quit it and try again."
+else
     "$python_cmd" "$root/server.py" &
     server_pid=$!
 
-    # Wait for the server to start responding, up to 15 seconds. "/" is served
-    # locally so this doesn't trigger a full price fetch on every probe.
+    # Wait for the server to start responding, up to 15 seconds. /api/ping is
+    # answered locally so this doesn't trigger a full price fetch on every probe.
     ready=false
     for _ in $(seq 1 30); do
-        if curl -s --max-time 1 "$url/" >/dev/null 2>&1; then ready=true; break; fi
+        if is_dashboard; then ready=true; break; fi
         sleep 0.5
     done
     $ready || { kill "$server_pid" 2>/dev/null; fail "The dashboard server did not start on port $port."; }

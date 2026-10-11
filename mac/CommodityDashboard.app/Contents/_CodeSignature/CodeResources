@@ -6,11 +6,11 @@
 	<dict>
 		<key>Resources/icon.icns</key>
 		<data>
-		nCOnXVxUfRsVk5QRGFln3mjR6+c=
+		YUzn03dEOBs55CDgckvZOIeoppU=
 		</data>
 		<key>Resources/launch.sh</key>
 		<data>
-		5GZjIti+kC1SbNlYa0KytmBpfiE=
+		y2g4Ys8k7gitsPXyPE/n3+C2ns4=
 		</data>
 		<key>Resources/public/app.js</key>
 		<data>
@@ -18,7 +18,7 @@
 		</data>
 		<key>Resources/public/index.html</key>
 		<data>
-		RAmLACXO0CWxAcThsKUFyQ9uaW0=
+		zE9TZnNXnQLRNL2OhMxcYmTxjGw=
 		</data>
 		<key>Resources/public/style.css</key>
 		<data>
@@ -26,7 +26,7 @@
 		</data>
 		<key>Resources/server.py</key>
 		<data>
-		lb6WkRvswMKXkAq+cNXn7j3zl4s=
+		dmS99oTbKZpr+sDY7ZmIovVGhn4=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -35,14 +35,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Ut+oofNFIDW8sxxNxIr/wfrKgf3JMH5thQqAXP3sVU4=
+			/hp5VTKjDsBLzF4WNu/S/Vn0TkgGiw6pGz0DNCW0GPU=
 			</data>
 		</dict>
 		<key>Resources/launch.sh</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			hT5FgaG1wdDt5UqtYJo459CbOEaQf1pSClAdybKUit0=
+			C3gMX7p34MMgiKT81il5nJp0lEIaJcT3Hv3MYthNDTo=
 			</data>
 		</dict>
 		<key>Resources/public/app.js</key>
@@ -56,7 +56,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			RbQHR9Wc9NZ9HPHR+BU5vE8fMPSgnBfvL/3YOUFySTg=
+			26v0AgZkZSYjOj/pH+NPls/Mx5DrwioaqVaIA5y8QkQ=
 			</data>
 		</dict>
 		<key>Resources/public/style.css</key>
@@ -70,7 +70,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Okmp8Fn7bs+xl7EkQOgWeuDpU1OpXD97jvZWP6zxU+s=
+			JguD7TOYRbxEWntkYlScwQe9mE7xe/RKC8lp7d+/6eg=
 			</data>
 		</dict>
 	</dict>
