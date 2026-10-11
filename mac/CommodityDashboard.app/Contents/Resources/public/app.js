@@ -1,6 +1,8 @@
 const REFRESH_MS = 30000;
 const NEWS_REFRESH_MS = 300000;
 const WATCHLIST_KEY = "equities-watchlist";
+const COLUMN_WIDTHS_KEY = "column-widths";
+const MIN_COLUMN_PCT = 4;
 const SYMBOL_RE = /^[A-Z0-9.\-^]{1,15}$/;
 
 const updatedAtEl = document.getElementById("updated-at");
@@ -217,6 +219,7 @@ async function refreshEquities() {
 const bizScanBtn = document.getElementById("biz-scan");
 const bizStatusEl = document.getElementById("biz-status");
 const bizLinesEl = document.getElementById("biz-lines");
+const bizHeaderEl = document.getElementById("biz-header");
 
 function renderBizMentions(data) {
   const threads = data.threads || [];
@@ -231,6 +234,7 @@ function renderBizMentions(data) {
 
   if (data.mentions.length === 0) {
     bizLinesEl.hidden = true;
+    bizHeaderEl.hidden = true;
     return;
   }
   const max = data.mentions[0].count;
@@ -242,6 +246,7 @@ function renderBizMentions(data) {
       <span class="biz-count">${m.count}</span>
     </div>`).join("");
   bizLinesEl.hidden = false;
+  bizHeaderEl.hidden = false;
 }
 
 bizScanBtn.addEventListener("click", async () => {
@@ -260,6 +265,103 @@ bizScanBtn.addEventListener("click", async () => {
     bizScanBtn.textContent = "Scan";
   }
 });
+
+// Drag-to-resize columns. Each header cell with data-col gets a handle on its
+// right edge; dragging it moves width between that column and the next visible
+// one (the total stays fixed). Widths are stored as --w-<col> vars on the
+// section, so header and body rows stay aligned. Double-click resets.
+function loadColumnWidths() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(COLUMN_WIDTHS_KEY) || "{}");
+    return raw && typeof raw === "object" ? raw : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveColumnWidths(all) {
+  try {
+    localStorage.setItem(COLUMN_WIDTHS_KEY, JSON.stringify(all));
+  } catch {
+    // widths just won't persist
+  }
+}
+
+const columnWidths = loadColumnWidths();
+
+function setupColumnResize(section, key) {
+  const head = section.querySelector(".line-head");
+  const cells = [...head.querySelectorAll("[data-col]")];
+
+  const apply = (widths) => {
+    for (const [col, pct] of Object.entries(widths)) {
+      section.style.setProperty(`--w-${col}`, `${pct.toFixed(2)}%`);
+    }
+  };
+  if (columnWidths[key]) apply(columnWidths[key]);
+
+  cells.slice(0, -1).forEach((cell) => {
+    const handle = document.createElement("span");
+    handle.className = "col-resize";
+    handle.title = "Drag to resize · double-click to reset";
+    cell.appendChild(handle);
+
+    handle.addEventListener("click", (e) => e.stopPropagation());
+    handle.addEventListener("dblclick", (e) => {
+      e.stopPropagation();
+      cells.forEach((c) => section.style.removeProperty(`--w-${c.dataset.col}`));
+      delete columnWidths[key];
+      saveColumnWidths(columnWidths);
+    });
+
+    handle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const visible = cells.filter((c) => c.offsetWidth > 0);
+      const next = visible[visible.indexOf(cell) + 1];
+      if (!next) return;
+
+      // Freeze every visible column at its rendered share first, so only the
+      // two columns either side of the handle move.
+      const rowWidth = head.getBoundingClientRect().width;
+      const widths = {};
+      visible.forEach((c) => {
+        widths[c.dataset.col] = (c.getBoundingClientRect().width / rowWidth) * 100;
+      });
+      const a0 = widths[cell.dataset.col];
+      const b0 = widths[next.dataset.col];
+      const startX = e.clientX;
+
+      handle.setPointerCapture(e.pointerId);
+      handle.classList.add("dragging");
+      document.body.classList.add("col-resizing");
+
+      const onMove = (ev) => {
+        let d = ((ev.clientX - startX) / rowWidth) * 100;
+        d = Math.max(MIN_COLUMN_PCT - a0, Math.min(b0 - MIN_COLUMN_PCT, d));
+        widths[cell.dataset.col] = a0 + d;
+        widths[next.dataset.col] = b0 - d;
+        apply(widths);
+      };
+      const onUp = () => {
+        handle.removeEventListener("pointermove", onMove);
+        handle.removeEventListener("pointerup", onUp);
+        handle.removeEventListener("pointercancel", onUp);
+        handle.classList.remove("dragging");
+        document.body.classList.remove("col-resizing");
+        columnWidths[key] = widths;
+        saveColumnWidths(columnWidths);
+      };
+      handle.addEventListener("pointermove", onMove);
+      handle.addEventListener("pointerup", onUp);
+      handle.addEventListener("pointercancel", onUp);
+    });
+  });
+}
+
+setupColumnResize(document.querySelector(".section-equities"), "equities");
+setupColumnResize(document.querySelector(".section-commodities"), "commodities");
+setupColumnResize(document.querySelector(".section-biz"), "biz");
 
 function refreshAll() {
   refreshCommodities();

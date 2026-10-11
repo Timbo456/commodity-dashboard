@@ -37,11 +37,11 @@
       <p id="ticker-error" class="ticker-error muted" hidden></p>
       <div class="lines lines-header">
         <div class="line line-head">
-          <span class="line-name"><button type="button" class="sort-btn" data-sort="name">Name <span class="sort-arrow" data-key="name">↕</span></button></span>
-          <span class="line-symbol"></span>
-          <span class="line-price"></span>
-          <span class="line-delta"><button type="button" class="sort-btn" data-sort="changePercent">% Chg <span class="sort-arrow" data-key="changePercent">↕</span></button></span>
-          <span class="line-cap"><button type="button" class="sort-btn" data-sort="marketCap">Mkt Cap <span class="sort-arrow" data-key="marketCap">↕</span></button></span>
+          <span class="line-name" data-col="name"><button type="button" class="sort-btn" data-sort="name">Name <span class="sort-arrow" data-key="name">↕</span></button></span>
+          <span class="line-symbol" data-col="symbol">Ticker</span>
+          <span class="line-price" data-col="price">Price</span>
+          <span class="line-delta" data-col="delta"><button type="button" class="sort-btn" data-sort="changePercent">% Chg <span class="sort-arrow" data-key="changePercent">↕</span></button></span>
+          <span class="line-cap" data-col="cap"><button type="button" class="sort-btn" data-sort="marketCap">Mkt Cap <span class="sort-arrow" data-key="marketCap">↕</span></button></span>
           <span class="line-remove"></span>
         </div>
       </div>
@@ -51,6 +51,14 @@
 
     <section class="section section-commodities">
       <h2>Commodities</h2>
+      <div class="lines lines-header">
+        <div class="line line-head">
+          <span class="line-name" data-col="name">Name</span>
+          <span class="line-symbol" data-col="symbol">Symbol</span>
+          <span class="line-price" data-col="price">Price</span>
+          <span class="line-delta" data-col="delta">% Chg</span>
+        </div>
+      </div>
       <div class="lines" id="commodities-lines"></div>
     </section>
 
@@ -60,6 +68,14 @@
         <button type="button" id="biz-scan" class="biz-scan" title="Scan every live /smg/ thread on /biz/">Scan</button>
       </div>
       <p id="biz-status" class="biz-status muted">Counts ticker mentions across every live /smg/ thread on 4chan /biz/.</p>
+      <div class="lines lines-header" id="biz-header" hidden>
+        <div class="line line-head">
+          <span data-col="ticker">Ticker</span>
+          <span data-col="company">Company</span>
+          <span data-col="bar"></span>
+          <span class="biz-count" data-col="count">#</span>
+        </div>
+      </div>
       <div class="lines" id="biz-lines" hidden></div>
     </section>
   </main>

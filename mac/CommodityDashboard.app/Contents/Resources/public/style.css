@@ -174,15 +174,25 @@ body::before {
   background: var(--section-accent, var(--text-muted));
 }
 
-.section-equities { --section-accent: var(--accent-equities); }
-.section-commodities { --section-accent: var(--accent-commodities); }
+/* Column widths live in per-section variables so the drag-to-resize handles
+   (app.js) can override them inline; these are just the defaults. */
+.section-equities {
+  --section-accent: var(--accent-equities);
+  --w-name: 34%; --w-symbol: 9%; --w-price: 17%; --w-delta: 20%; --w-cap: 14%;
+}
+.section-commodities {
+  --section-accent: var(--accent-commodities);
+  --w-name: 36%; --w-symbol: 13%; --w-price: 24%; --w-delta: 27%;
+}
 .section-news { --section-accent: var(--accent-news); }
-.section-biz { --section-accent: var(--accent-biz); --biz-row-height: 25px; }
+.section-biz {
+  --section-accent: var(--accent-biz);
+  --biz-row-height: 25px;
+  --w-ticker: 54px; --w-company: minmax(0, 1fr); --w-bar: 22%; --w-count: 36px;
+}
 
-.section-equities .lines-header,
-.section-commodities .lines,
-.section-news .news-list,
-.section-biz .lines {
+.lines-header,
+.section-news .news-list {
   border-top: 2px solid var(--section-accent);
 }
 
@@ -205,8 +215,11 @@ body::before {
 .line > * {
   display: table-cell;
   vertical-align: middle;
-  padding: 6px 8px;
+  padding: 6px;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .line:last-child > * {
@@ -215,7 +228,7 @@ body::before {
 
 .line-name {
   font-weight: 600;
-  width: 36%;
+  width: var(--w-name);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -224,7 +237,7 @@ body::before {
 .line-symbol {
   font-size: 10px;
   color: var(--text-muted);
-  width: 13%;
+  width: var(--w-symbol);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -239,7 +252,7 @@ body::before {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;
-  width: 24%;
+  width: var(--w-price);
   white-space: nowrap;
 }
 
@@ -254,7 +267,7 @@ body::before {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
-  width: 27%;
+  width: var(--w-delta);
   white-space: nowrap;
   overflow: hidden;
 }
@@ -264,19 +277,8 @@ body::before {
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--text-secondary);
-  white-space: nowrap;
+  width: var(--w-cap);
 }
-
-#equities-lines .line-name,
-.lines-header .line-name { width: 34%; }
-#equities-lines .line-symbol,
-.lines-header .line-symbol { width: 9%; }
-#equities-lines .line-price,
-.lines-header .line-price { width: 17%; }
-#equities-lines .line-delta,
-.lines-header .line-delta { width: 20%; }
-#equities-lines .line-cap,
-.lines-header .line-cap { width: 14%; }
 
 .lines-header {
   margin-bottom: 6px;
@@ -297,6 +299,8 @@ body::before {
   background: none;
   border: none;
   font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
   color: inherit;
   text-align: inherit;
   padding: 0;
@@ -482,16 +486,18 @@ body::before {
 
 #biz-lines[hidden] { display: none; }
 
-#biz-lines .line {
+.section-biz .line {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) 22% 30px;
+  grid-template-columns: var(--w-ticker) var(--w-company) var(--w-bar) var(--w-count);
   align-items: center;
   height: var(--biz-row-height);
   border-bottom: 1px solid var(--border);
 }
 
+.section-biz .lines-header .line { height: auto; border-bottom: none; }
+.section-biz .lines-header[hidden] { display: none; }
 #biz-lines .line:last-child { border-bottom: none; }
-#biz-lines .line > * { display: block; border-bottom: none; }
+.section-biz .line > * { display: block; border-bottom: none; }
 
 .biz-ticker { font-weight: 700; }
 
@@ -509,6 +515,7 @@ body::before {
   overflow: hidden;
   padding: 0 !important;
   margin: 0 6px;
+  min-width: 0;
 }
 
 .biz-bar > span {
@@ -524,24 +531,52 @@ body::before {
 }
 
 /* Three columns get tight below ~1700px: drop the commodity symbol column, currency and
-   absolute change so the commodity and equity rows still fit. Kept last so it
-   overrides the base column widths above. */
+   absolute change so the commodity and equity rows still fit. Widths dragged by
+   the user (inline vars on the section) still win over these defaults. */
 @media (min-width: 901px) and (max-width: 1700px) {
   .section-commodities .line-symbol,
   .delta-abs,
   .line-ccy,
   .section-equities .line-unit { display: none !important; }
-  .line-delta { width: 30%; }
-  .line-name { width: 37%; }
-  .line-price { width: 33%; }
-  #equities-lines .line-name,
-  .lines-header .line-name { width: 30%; }
-  #equities-lines .line-symbol,
-  .lines-header .line-symbol { width: 12%; }
-  #equities-lines .line-price,
-  .lines-header .line-price { width: 15%; }
-  #equities-lines .line-delta,
-  .lines-header .line-delta { width: 22%; }
-  #equities-lines .line-cap,
-  .lines-header .line-cap { width: 15%; }
+  .section-equities {
+    --w-name: 29%; --w-symbol: 13%; --w-price: 15%; --w-delta: 22%; --w-cap: 15%;
+  }
+  .section-commodities {
+    --w-name: 37%; --w-price: 33%; --w-delta: 30%;
+  }
+}
+
+/* Drag handles on header cell edges (added by app.js). */
+.line-head > * { position: relative; }
+
+.col-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.col-resize::after {
+  content: "";
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  right: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.col-resize:hover::after,
+.col-resize.dragging::after {
+  width: 2px;
+  background: var(--section-accent);
+}
+
+body.col-resizing,
+body.col-resizing * {
+  cursor: col-resize !important;
+  user-select: none;
 }
