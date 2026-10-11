@@ -63,7 +63,7 @@ function lineHtml(c, { removable } = {}) {
   if (c.error || c.price === null) {
     return `
       <div class="line is-error">
-        <span class="line-name">${c.name}</span>
+        <span class="line-name" title="${c.name}">${c.name}</span>
         <span class="line-symbol">${c.symbol}</span>
         <span class="line-error-text">Price unavailable</span>
         ${removeBtn}
@@ -75,9 +75,9 @@ function lineHtml(c, { removable } = {}) {
   const capCell = removable ? `<span class="line-cap">${formatMarketCap(c.marketCap)}</span>` : "";
   return `
     <div class="line">
-      <span class="line-name">${c.name}</span>
+      <span class="line-name" title="${c.name}">${c.name}</span>
       <span class="line-symbol">${c.symbol}</span>
-      <span class="line-price">${formatPrice(c.price)}<span class="line-unit">${c.currency || ""}${unit}</span></span>
+      <span class="line-price">${formatPrice(c.price)}<span class="line-unit"><span class="line-ccy">${c.currency || ""}</span>${unit}</span></span>
       <span class="line-delta ${delta.dir}">${delta.text}</span>
       ${capCell}
       ${removeBtn}

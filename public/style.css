@@ -64,41 +64,21 @@ body::before {
   background: linear-gradient(90deg, var(--accent-equities), var(--accent-news), var(--accent-commodities));
 }
 
+/* No max-width: the columns stretch to fill however wide the window is. */
 .page {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 32px 20px 60px;
 }
 
 .columns {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(0, 0.8fr);
   gap: 16px;
   align-items: start;
 }
 
 .columns .section {
   min-width: 0;
-}
-
-/* Three columns get tight below ~1240px: drop the symbol column and the
-   absolute change so the commodity and equity rows still fit. */
-@media (min-width: 901px) and (max-width: 1240px) {
-  .section-equities .line-symbol,
-  .section-commodities .line-symbol,
-  .delta-abs,
-  .section-equities .line-unit { display: none !important; }
-  .line-delta { width: 30%; }
-  .line-name { width: 40%; }
-  .line-price { width: 30%; }
-  #equities-lines .line-name,
-  .lines-header .line-name { width: 28%; }
-  #equities-lines .line-price,
-  .lines-header .line-price { width: 21%; }
-  #equities-lines .line-delta,
-  .lines-header .line-delta { width: 26%; }
-  #equities-lines .line-cap,
-  .lines-header .line-cap { width: 18%; }
 }
 
 /* Narrow windows: two columns with the /biz/ list full-width underneath. */
@@ -288,15 +268,15 @@ body::before {
 }
 
 #equities-lines .line-name,
-.lines-header .line-name { width: 24%; }
+.lines-header .line-name { width: 34%; }
 #equities-lines .line-symbol,
-.lines-header .line-symbol { width: 10%; }
+.lines-header .line-symbol { width: 9%; }
 #equities-lines .line-price,
-.lines-header .line-price { width: 18%; }
+.lines-header .line-price { width: 17%; }
 #equities-lines .line-delta,
 .lines-header .line-delta { width: 20%; }
 #equities-lines .line-cap,
-.lines-header .line-cap { width: 20%; }
+.lines-header .line-cap { width: 14%; }
 
 .lines-header {
   margin-bottom: 6px;
@@ -467,7 +447,7 @@ body::before {
   min-height: 31px;
 }
 
-.biz-head h2 { margin: 0; }
+.biz-head h2 { margin: 0; white-space: nowrap; }
 
 .biz-scan {
   flex-shrink: 0;
@@ -541,4 +521,26 @@ body::before {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+/* Three columns get tight below ~1700px: drop the symbol column, currency and
+   absolute change so the commodity and equity rows still fit. Kept last so it
+   overrides the base column widths above. */
+@media (min-width: 901px) and (max-width: 1700px) {
+  .section-equities .line-symbol,
+  .section-commodities .line-symbol,
+  .delta-abs,
+  .line-ccy,
+  .section-equities .line-unit { display: none !important; }
+  .line-delta { width: 30%; }
+  .line-name { width: 37%; }
+  .line-price { width: 33%; }
+  #equities-lines .line-name,
+  .lines-header .line-name { width: 38%; }
+  #equities-lines .line-price,
+  .lines-header .line-price { width: 18%; }
+  #equities-lines .line-delta,
+  .lines-header .line-delta { width: 22%; }
+  #equities-lines .line-cap,
+  .lines-header .line-cap { width: 16%; }
 }
