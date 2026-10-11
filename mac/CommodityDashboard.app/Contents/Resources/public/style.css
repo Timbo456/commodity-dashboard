@@ -523,11 +523,10 @@ body::before {
   text-align: right;
 }
 
-/* Three columns get tight below ~1700px: drop the symbol column, currency and
+/* Three columns get tight below ~1700px: drop the commodity symbol column, currency and
    absolute change so the commodity and equity rows still fit. Kept last so it
    overrides the base column widths above. */
 @media (min-width: 901px) and (max-width: 1700px) {
-  .section-equities .line-symbol,
   .section-commodities .line-symbol,
   .delta-abs,
   .line-ccy,
@@ -536,11 +535,13 @@ body::before {
   .line-name { width: 37%; }
   .line-price { width: 33%; }
   #equities-lines .line-name,
-  .lines-header .line-name { width: 38%; }
+  .lines-header .line-name { width: 30%; }
+  #equities-lines .line-symbol,
+  .lines-header .line-symbol { width: 12%; }
   #equities-lines .line-price,
-  .lines-header .line-price { width: 18%; }
+  .lines-header .line-price { width: 15%; }
   #equities-lines .line-delta,
   .lines-header .line-delta { width: 22%; }
   #equities-lines .line-cap,
-  .lines-header .line-cap { width: 16%; }
+  .lines-header .line-cap { width: 15%; }
 }
