@@ -26,7 +26,7 @@ if ($portInUse -and -not (Test-Dashboard)) {
     Add-Type -AssemblyName System.Windows.Forms
     [System.Windows.Forms.MessageBox]::Show(
         "Port $port is already in use by another program. Quit it and try again.",
-        "Commodity Dashboard") | Out-Null
+        "News Dashboard") | Out-Null
     exit 1
 }
 

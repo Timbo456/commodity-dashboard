@@ -1,5 +1,5 @@
 #!/bin/bash
-# Commodity Dashboard — macOS launcher.
+# News Dashboard — macOS launcher.
 #
 # Starts the Python price server if it isn't already running on its port,
 # opens the dashboard in a borderless Chrome app window (no tabs/address
@@ -42,7 +42,7 @@ echo $$ > "$pidfile"
 
 fail() {
     osascript \
-        -e "display dialog \"$1\" with title \"Commodity Dashboard\" buttons {\"OK\"} default button 1 with icon stop" \
+        -e "display dialog \"$1\" with title \"News Dashboard\" buttons {\"OK\"} default button 1 with icon stop" \
         >/dev/null 2>&1 || true
     exit 1
 }

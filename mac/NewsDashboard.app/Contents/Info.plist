@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Commodity Dashboard</string>
+	<string>News Dashboard</string>
 	<key>CFBundleExecutable</key>
 	<string>launcher</string>
 	<key>CFBundleIconFile</key>
@@ -11,7 +11,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>com.timbo456.commodity-dashboard-mac</string>
 	<key>CFBundleName</key>
-	<string>Commodity Dashboard</string>
+	<string>News Dashboard</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

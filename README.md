@@ -1,4 +1,4 @@
-# Commodity Dashboard
+# News Dashboard
 
 A local commodity & equities dashboard with a live news feed. Prices via Yahoo Finance (delayed ~15–20 min), refreshing every 30s; news refreshes every 5 minutes.
 
@@ -9,7 +9,7 @@ A local commodity & equities dashboard with a live news feed. Prices via Yahoo F
 
 ### macOS
 
-Unzip, then drag `CommodityDashboard.app` to Applications. If Gatekeeper warns on first launch: right-click the app → **Open**.
+Unzip, then drag `NewsDashboard.app` to Applications. If Gatekeeper warns on first launch: right-click the app → **Open**.
 
 ### Windows
 
