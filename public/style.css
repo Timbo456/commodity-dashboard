@@ -477,10 +477,10 @@ body::before {
 .biz-status a { color: inherit; }
 .biz-status.is-error { color: var(--critical); }
 
-/* ~25 rows visible; the rest scroll. */
+/* Capped to roughly the commodities panel height; the rest scroll. */
 #biz-lines {
   display: block;
-  max-height: calc(25 * var(--biz-row-height));
+  max-height: calc(12 * var(--biz-row-height));
   overflow-y: auto;
 }
 
