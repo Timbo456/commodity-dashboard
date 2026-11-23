@@ -365,6 +365,59 @@ def count_tickers(posts, names):
     return counts
 
 
+QUOTELINK_RE = re.compile(r">>(\d+)")
+URL_RE = re.compile(r"https?://\S+")
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _post_plain_text(com):
+    """A 4chan comment's HTML turned into plain text."""
+    if not com:
+        return ""
+    text = com.replace("<br>", " ").replace("<br/>", " ").replace("<br />", " ")
+    text = HTML_TAG_RE.sub("", text)
+    return html.unescape(text)
+
+
+def top_conversations(threads_posts, limit=5):
+    """The posts that drew the most replies, i.e. what the board argued about.
+
+    Reply links render as ">>12345" once the markup is stripped, so counting
+    them per referenced post is a cheap measure of engagement.
+    """
+    reply_counts = Counter()
+    posts_by_no = {}
+    for meta, posts in threads_posts:
+        for post in posts:
+            plain = _post_plain_text(post.get("com"))
+            # Skip the OP: it always draws the most replies, but it is just
+            # the /smg/ boilerplate (resource links), not a conversation.
+            if post.get("resto"):
+                posts_by_no[post["no"]] = (meta, plain)
+            for ref in QUOTELINK_RE.findall(plain):
+                reply_counts[int(ref)] += 1
+
+    conversations = []
+    for no, replies in reply_counts.most_common():
+        entry = posts_by_no.get(no)
+        if not entry:
+            continue  # a reply to a post in a thread that has since been pruned
+        meta, plain = entry
+        text = QUOTELINK_RE.sub("", plain)
+        text = re.sub(r"\s+", " ", URL_RE.sub("", text)).strip()
+        if len(text) < 25:
+            continue  # image-only and "this" posts make poor summaries
+        conversations.append({
+            "replies": replies,
+            "text": text[:240],
+            "subject": meta["subject"],
+            "url": f"{meta['url']}#p{no}",
+        })
+        if len(conversations) >= limit:
+            break
+    return conversations
+
+
 _biz_cache = {"data": None, "fetched_at": 0}
 
 
@@ -386,6 +439,7 @@ def get_biz_mentions():
     names = get_ticker_names()
     counts = Counter()
     scanned = []
+    threads_posts = []
     for t in smg_threads:
         time.sleep(1)  # 4chan API: max one request per second
         try:
@@ -395,12 +449,14 @@ def get_biz_mentions():
                 continue
             raise
         counts.update(count_tickers(posts, names))
-        scanned.append({
+        meta = {
             "no": t["no"],
             "subject": html.unescape(t.get("sub", "")),
             "url": f"https://boards.4chan.org/biz/thread/{t['no']}",
             "posts": len(posts),
-        })
+        }
+        scanned.append(meta)
+        threads_posts.append((meta, posts))
 
     data = {
         "generatedAt": int(now),
@@ -409,6 +465,7 @@ def get_biz_mentions():
             {"ticker": t, "name": names[t], "count": n}
             for t, n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
         ],
+        "conversations": top_conversations(threads_posts),
         "error": None,
     }
     _biz_cache["data"] = data

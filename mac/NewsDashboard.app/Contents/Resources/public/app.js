@@ -220,6 +220,8 @@ const bizScanBtn = document.getElementById("biz-scan");
 const bizStatusEl = document.getElementById("biz-status");
 const bizLinesEl = document.getElementById("biz-lines");
 const bizHeaderEl = document.getElementById("biz-header");
+const bizConvosEl = document.getElementById("biz-convos");
+const bizConvoListEl = document.getElementById("biz-convo-list");
 
 function renderBizMentions(data) {
   const threads = data.threads || [];
@@ -231,6 +233,8 @@ function renderBizMentions(data) {
   bizStatusEl.innerHTML =
     `${data.mentions.length} tickers across ${threads.length} live thread${threads.length === 1 ? "" : "s"} ` +
     `(${posts.toLocaleString()} posts) · ${links} · scanned ${new Date(data.generatedAt * 1000).toLocaleTimeString()}`;
+
+  renderBizConversations(data.conversations || []);
 
   if (data.mentions.length === 0) {
     bizLinesEl.hidden = true;
@@ -247,6 +251,21 @@ function renderBizMentions(data) {
     </div>`).join("");
   bizLinesEl.hidden = false;
   bizHeaderEl.hidden = false;
+}
+
+function renderBizConversations(conversations) {
+  if (conversations.length === 0) {
+    bizConvosEl.hidden = true;
+    bizConvoListEl.innerHTML = "";
+    return;
+  }
+  bizConvoListEl.innerHTML = conversations.map((c) => `
+    <li>
+      <a href="${escapeHtml(c.url)}" target="_blank" rel="noopener noreferrer"
+         title="${escapeHtml(c.subject)}">${escapeHtml(c.text)}</a>
+      <span class="biz-convo-replies">&#8617; ${c.replies}</span>
+    </li>`).join("");
+  bizConvosEl.hidden = false;
 }
 
 bizScanBtn.addEventListener("click", async () => {
